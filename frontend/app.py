@@ -81,7 +81,7 @@ def main():
         # Center the image using columns within the column
         img_col1, img_col2, img_col3 = st.columns([1, 1, 1])
         with img_col2:
-            st.image("spending_agent_icon.png", width=64)
+            st.image("static/spending_agent_icon.png", width=64)
         
         st.markdown('<h1 class="title">PennyWise</h1>', unsafe_allow_html=True)
         st.markdown('<p class="subtitle">Your intelligent spending companion</p>', unsafe_allow_html=True)
