@@ -9,7 +9,7 @@ def send_chat_message(user_message):
         # Create JSON payload
         payload = {
             "request": user_message,
-            "thread_id" # now includes thread_id for tracking state
+            "thread_id": thread_id # now includes thread_id for tracking state
         }
         
         # Make POST request to backend
