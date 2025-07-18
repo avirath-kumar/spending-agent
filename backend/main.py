@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
+from typing import Optional
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv
@@ -29,7 +30,7 @@ def get_db():
 # Define a Pydantic model for the request / response (including thread_id for continuity)
 class ChatRequest(BaseModel):
     request: str
-    thread_id: str = None
+    thread_id: Optional[str] = None
 
 class ChatResponse(BaseModel):
     response: str

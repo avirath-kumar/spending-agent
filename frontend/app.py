@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 import json
 
-def send_chat_message(user_message):
+def send_chat_message(user_message, thread_id=None):
     """Send user message to the backend API via POST request"""
     try:
         # Create JSON payload
@@ -13,6 +13,8 @@ def send_chat_message(user_message):
         }
         
         # Make POST request to backend
+        # LOGGING
+        print(f"Sending payload: {payload}")
         response = requests.post(
             "http://localhost:8000/chat",
             json=payload,
