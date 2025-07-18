@@ -102,6 +102,26 @@ def main():
         padding: 10px;
         margin-bottom: 10px;
     }
+    /* Sidebar contrast improvements */
+    section[data-testid="stSidebar"] {
+        background: #232946 !important;
+    }
+    section[data-testid="stSidebar"] * {
+        color: #F5F5F5 !important;
+    }
+    section[data-testid="stSidebar"] .stTextInput > div > input {
+        background: #121629 !important;
+        color: #F5F5F5 !important;
+        border: 1px solid #F5F5F5 !important;
+    }
+    section[data-testid="stSidebar"] .stButton > button {
+        background: #393e6e !important;
+        color: #F5F5F5 !important;
+        border: 1px solid #F5F5F5 !important;
+    }
+    section[data-testid="stSidebar"] .stCaption, section[data-testid="stSidebar"] .stInfo, section[data-testid="stSidebar"] .stCodeBlock {
+        color: #E0E0E0 !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
