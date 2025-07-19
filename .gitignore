@@ -62,6 +62,9 @@ logs/
 *.sqlite
 *.sqlite3
 
+# CSV data files
+02_06_25_close.csv
+
 # Temporary files
 *.tmp
 *.temp
