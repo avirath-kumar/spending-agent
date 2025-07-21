@@ -106,7 +106,7 @@ def get_schema_info() -> str:
 Additional Context:
 - For demo purposes, use user_id = 1 or email = 'demo@example.com'
 - In the transactions table:
-  - amount is FLOAT (negative for expenses, positive for income)
+  - amount is FLOAT (positive values, expenses and income both positive)
   - date is stored as DATETIME
   - category is stored as JSON (array of category strings)
   - name contains the transaction description/merchant
@@ -200,7 +200,6 @@ def analyze_transactions(state: AgentState) -> AgentState:
     Generate a SQL query to answer this question. 
     Important notes:
     - Use user_id = 1 for the demo user
-    - amount is negative for expenses, positive for income
     - date is in DATETIME format
     - category is stored as JSON array
     
