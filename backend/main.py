@@ -1,8 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv
 import os
 from sqlalchemy.orm import Session
@@ -10,14 +8,13 @@ from database import SessionLocal, User, Conversation
 from typing import List
 import json
 import uuid
+from agent_graph import process_query
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = FastAPI()
 
-# Initialize langchain openai client
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
 
 # Dependency to get DB session
 def get_db():
@@ -58,25 +55,21 @@ async def chat_endpoint(request: ChatRequest, db: Session = Depends(get_db)):
             Conversation.thread_id == thread_id
         ).first()
 
-        # Build message history
-        messages = []
+        # Build conversation history for agent
+        conversation_history = []
         if conversation and conversation.messages:
-            for msg in conversation.messages:
-                if msg["role"] == "user":
-                    messages.append(HumanMessage(content=msg["content"]))
-                else:
-                    messages.append(AIMessage(content=msg["content"]))
+            conversation_history = conversation.messages
         
-        # Add current message
-        messages.append(HumanMessage(content=request.request))
-
-        # Get LLM response
-        response = llm.invoke(messages)
+        # Get agent response
+        response_content = await process_query(
+            user_query=request.request,
+            conversation_history=conversation_history
+        )
 
         # Update conversation history
         new_messages = conversation.messages if conversation else []
         new_messages.append({"role": "user", "content": request.request})
-        new_messages.append({"role": "assistant", "content": response.content})
+        new_messages.append({"role": "assistant", "content": response_content})
 
         if conversation:
             conversation.messages = new_messages
@@ -90,8 +83,8 @@ async def chat_endpoint(request: ChatRequest, db: Session = Depends(get_db)):
 
         db.commit()
 
-        # Now return the llm response to the user with the proper thread_id
-        return ChatResponse(response=response.content, thread_id=thread_id)
+        # Now return the agent response to the user with the proper thread_id
+        return ChatResponse(response=response_content, thread_id=thread_id)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,6 +1,17 @@
 # Core Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-langchain==0.3.26
-python-dotenv==1
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+python-dotenv>=1.0.0
+
+# Database
+sqlalchemy>=2.0.23
+
+# LangChain (let pip resolve compatible versions)
+langchain>=0.3.26
+langchain-core>=0.3.26
+langchain-openai>=0.2.9
+langgraph>=0.2.63
+
+# Data Processing
+pandas>=2.2.0
