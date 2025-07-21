@@ -203,6 +203,21 @@ def analyze_transactions(state: AgentState) -> AgentState:
     - date is in DATETIME format
     - category is stored as JSON array
     
+    FLEXIBLE MATCHING GUIDELINES:
+    - For merchant/store names: Use LIKE with % wildcards for partial matching
+      Example: For "walmart", use "name LIKE '%walmart%' OR name LIKE '%wal-mart%'"
+    - For categories: Use JSON_EXTRACT or check if category array contains similar terms
+      Example: For "restaurants", check for "food", "dining", "restaurant", etc.
+    - Be case-insensitive: Use LOWER() function on both sides
+    - Consider common variations and abbreviations
+    
+    CATEGORY MAPPINGS (use these when user asks about broad categories):
+    - "restaurants/dining/food" → check for: 'Food and Drink', 'Restaurants', 'Fast Food', 'Coffee'
+    - "shopping/retail" → check for: 'Shops', 'General Merchandise', 'Clothing', 'Department Stores'
+    - "gas/fuel" → check for: 'Gas Stations', 'Transportation'
+    - "groceries" → check for: 'Grocery', 'Supermarkets'
+    - "entertainment" → check for: 'Entertainment', 'Recreation'
+    
     Return ONLY the SQL query, no explanation.
     """
 
