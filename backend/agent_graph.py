@@ -213,6 +213,7 @@ def analyze_transactions(state: AgentState) -> AgentState:
     sql_query = sql_query.replace("```sql", "").replace("```", "").strip()
 
     state["sql_query"] = sql_query
+    print(sql_query) # LOGGING
 
     # Execute the query, write results to state
     results = execute_sql_query.invoke({"query": sql_query})
