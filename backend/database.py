@@ -26,7 +26,9 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
+    # Relationships
     conversations = relationship("Conversation", back_populates="user")
+    plaid_items = relationship("PlaidItem", back_populates="user")
 
 class Conversation(Base):
     __tablename__ = "conversations"
@@ -52,6 +54,46 @@ class Transaction(Base):
     name = Column(String)
     category = Column(JSON)  # Plaid provides array of categories
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    account = relationship("Account", back_populates="transactions")
+
+# Plaid item is a singular bank connection
+class PlaidItem(Base):
+    __tablename__ = "plaid_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    access_token = Column(String, unique=True)  # Encrypted token for API calls
+    item_id = Column(String, unique=True)       # Plaid's ID for this connection
+    institution_id = Column(String)             # Which bank
+    institution_name = Column(String)           # Human-readable bank name
+    cursor = Column(String)                     # For incremental syncs
+    last_sync = Column(DateTime)                # Track sync status
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User", back_populates="plaid_items")
+    accounts = relationship("Account", back_populates="plaid_item")
+
+# Each bank connection can have multiple accounts (checking vs savings)
+class Account(Base):
+    __tablename__ = "accounts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    plaid_item_id = Column(Integer, ForeignKey("plaid_items.id"))
+    account_id = Column(String, unique=True)    # Plaid's account ID
+    name = Column(String)                       # "Chase Checking"
+    official_name = Column(String)              # "CHASE TOTAL CHECKING"
+    type = Column(String)                       # "depository", "credit", etc.
+    subtype = Column(String)                    # "checking", "savings", etc.
+    balance_available = Column(Float)
+    balance_current = Column(Float)
+    balance_limit = Column(Float)               # For credit cards
+    currency = Column(String, default="USD")
+    
+    # Relationships
+    plaid_item = relationship("PlaidItem", back_populates="accounts")
+    transactions = relationship("Transaction", back_populates="account")
 
 # Create tables
 Base.metadata.create_all(bind=engine)
