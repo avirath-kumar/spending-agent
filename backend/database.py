@@ -48,7 +48,7 @@ class Transaction(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     plaid_transaction_id = Column(String, unique=True)
-    account_id = Column(String)
+    account_id = Column(Integer, ForeignKey("accounts.id"))
     amount = Column(Float)
     date = Column(DateTime)
     name = Column(String)

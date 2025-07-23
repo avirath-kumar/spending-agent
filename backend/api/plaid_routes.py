@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import get_db, User, PlaidItem
+from database import get_db, User, PlaidItem, Account
 from services.plaid_service import PlaidService
 from services.transaction_sync import TransactionSyncService
 from pydantic import BaseModel
