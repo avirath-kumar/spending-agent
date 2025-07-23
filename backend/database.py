@@ -55,7 +55,7 @@ class Transaction(Base):
     category = Column(JSON)  # Plaid provides array of categories
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    account = relationship(Account, back_populates="transactions")
+    account = relationship("Account", back_populates="transactions")
 
 # Plaid item is a singular bank connection
 class PlaidItem(Base):
@@ -94,6 +94,14 @@ class Account(Base):
     # Relationships
     plaid_item = relationship("PlaidItem", back_populates="accounts")
     transactions = relationship("Transaction", back_populates="account")
+
+# Database dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # Create tables
 Base.metadata.create_all(bind=engine)

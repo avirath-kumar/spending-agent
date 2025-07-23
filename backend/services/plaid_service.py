@@ -1,7 +1,7 @@
 import plaid
 from plaid.api import plaid_api
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
-from plaid.model.link_token_create_request import LinkTokenCreateRequestUser
+from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
 from plaid.model.country_code import CountryCode
 from plaid.model.products import Products
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
@@ -24,7 +24,7 @@ class PlaidService:
             }
         )
         api_client = plaid.ApiClient(configuration)
-        self.client = plaid_api.PlaidAPI(api_client)
+        self.client = plaid_api.PlaidApi(api_client)
 
     # Create a token for Plaid link frontend widget
     def create_link_token(self, user_id: str) -> Dict:
