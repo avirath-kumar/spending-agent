@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db, User, PlaidItem
 from services.plaid_service import PlaidService
+from services.transaction_sync import TransactionSyncService
 from pydantic import BaseModel
 from typing import Optional
 import json
@@ -58,7 +59,7 @@ async def exchange_public_token(
             user_id=user.id,
             access_token=result['access_token'],
             item_id=result['item_id'],
-            institution_id=request.institution.id,
+            institution_id=request.institution_id,
             institution_name=request.institution_name
         )
         db.add(plaid_item)
@@ -68,7 +69,7 @@ async def exchange_public_token(
         sync_service = TransactionSyncService(db)
         sync_result = sync_service.sync_item(plaid_item)
 
-        return{
+        return {
             "success": True,
             "message": f"Connected to {request.institution_name}",
             "sync_result": sync_result
@@ -114,7 +115,7 @@ async def get_accounts(db: Session = Depends(get_db)):
     """Get all connected accounts for the user"""
     user = db.query(User).filter(User.email == "demo@example.com").first()
 
-    accounts = db.query(Account).join(PlaidItem).filter(
+    accounts = db.query(Account).join(PlaidItem).filter( # ERROR USED BUT NOT IMPORTED!!!!
         PlaidItem.user_id == user.id
     ).all()
 

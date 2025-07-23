@@ -89,7 +89,7 @@ async def get_conversation(thread_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Conversation not found")
 
     return ConversationResponse(
-        thread_id=thread.id,
+        thread_id=thread_id,
         messages=conversation.messages
     )
 
@@ -104,7 +104,7 @@ async def list_conversations(db: Session = Depends(get_db)):
         Conversation.user_id == user.id
     ).order_by(Conversation.updated_at.desc()).all()
 
-    return[
+    return [
         ConversationResponse(
             thread_id=conv.thread_id,
             messages=conv.messages
@@ -114,7 +114,7 @@ async def list_conversations(db: Session = Depends(get_db)):
 # New endpoint to clear conversation
 @router.delete("/conversations/{thread_id}")
 async def delete_conversation(thread_id: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == :"demo@example.com").first()
+    user = db.query(User).filter(User.email == "demo@example.com").first()
 
     conversation = db.query(Conversation).filter(
         Conversation.user_id == user.id,

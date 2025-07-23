@@ -14,7 +14,7 @@ class TransactionSyncService:
 
     def sync_item(self, plaid_item: PlaidItem) -> Dict:
         """Full sync for a single bank connection"""
-        sync_sunmmary = {
+        sync_summary = {
             'added': 0,
             'modified': 0,
             'removed': 0,
@@ -51,7 +51,7 @@ class TransactionSyncService:
                 
                 # Handle removed transactions
                 for txn in sync_response['removed']:
-                    self._remove_transaction(txn_id['transaction_id'])
+                    self._remove_transaction(txn['transaction_id'])
                 
                 # Update cursor for next sync
                 cursor = sync_response['next_cursor']
@@ -118,7 +118,7 @@ class TransactionSyncService:
             plaid_transaction_id=txn_data['transaction_id'],
             account_id=account.id,
             amount=txn_data['amount'], #Plaid uses positives for expenses
-            date=datetime.strptime(txn_data['date']j, '%Y-%m-%d'),
+            date=datetime.strptime(txn_data['date'], '%Y-%m-%d'),
             name=txn_data['name'],
             category=txn_data.get('category', [])
         )
@@ -141,7 +141,7 @@ class TransactionSyncService:
         """Remove a transaction bc plaid detected it was deleted/invalid"""
         transaction = self.db.query(Transaction).filter(
             Transaction.plaid_transaction_id == transaction_id
-        ).first
+        ).first()
 
         if transaction:
             self.db.delete(transaction)

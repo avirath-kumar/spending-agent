@@ -15,3 +15,9 @@ langgraph>=0.2.63
 
 # Data Processing
 pandas>=2.2.0
+
+# Plaid
+plaid-python>=15.0.0
+
+# Additional for better async support
+httpx>=0.24.0
