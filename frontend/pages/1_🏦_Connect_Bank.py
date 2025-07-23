@@ -70,7 +70,7 @@ def main():
                     """
                     
                     # Render Plaid Link
-                    components.html(plaid_link_html, height=1)
+                    components.html(plaid_link_html, height=500)
                     
                     # Listen for messages from Plaid Link
                     st.info("🔒 Plaid Link opened in a secure window...")
