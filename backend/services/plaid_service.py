@@ -20,7 +20,7 @@ class PlaidService:
             host=getattr(plaid.Environment, os.getenv('PLAID_ENV', 'sandbox')),
             api_key={
                 'clientId': os.getenv('PLAID_CLIENT_ID'),
-                'secret': os.getenv('PLAID_SECRET'), # why is there a comma here?
+                'secret': os.getenv('PLAID_SECRET')
             }
         )
         api_client = plaid.ApiClient(configuration)
@@ -28,13 +28,14 @@ class PlaidService:
 
     # Create a token for Plaid link frontend widget
     def create_link_token(self, user_id: str) -> Dict:
+        webhook_url = os.getenv('PLAID_WEBHOOK_URL', 'https://example.com/webhook')
         request = LinkTokenCreateRequest(
-            products=[Products('transactions')], # this is what data we want
+            products=[Products('transactions')],
             client_name="PennyWise",
             country_codes=[CountryCode('US')],
             language='en',
-            user=LinkTokenCreateRequestUser(client_user_id=str(user_id))
-            # do i need a webhook url?
+            user=LinkTokenCreateRequestUser(client_user_id=str(user_id)),
+            webhook=webhook_url
         )
 
         response = self.client.link_token_create(request)

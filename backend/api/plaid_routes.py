@@ -110,12 +110,31 @@ async def sync_transactions(db: Session = Depends(get_db)):
         **total_summary
     )
 
+@router.post("/webhook")
+async def plaid_webhook(request: dict):
+    """Handle Plaid webhook events"""
+    webhook_type = request.get('webhook_type')
+    webhook_code = request.get('webhook_code')
+    
+    # Log webhook for debugging
+    print(f"Plaid webhook: {webhook_type}.{webhook_code}")
+    
+    # Handle different webhook types
+    if webhook_type == "TRANSACTIONS":
+        # Handle transaction updates
+        pass
+    elif webhook_type == "ITEM":
+        # Handle item updates (errors, etc.)
+        pass
+    
+    return {"status": "received"}
+
 @router.get("/accounts")
 async def get_accounts(db: Session = Depends(get_db)):
     """Get all connected accounts for the user"""
     user = db.query(User).filter(User.email == "demo@example.com").first()
 
-    accounts = db.query(Account).join(PlaidItem).filter( # ERROR USED BUT NOT IMPORTED!!!!
+    accounts = db.query(Account).join(PlaidItem).filter(
         PlaidItem.user_id == user.id
     ).all()
 
