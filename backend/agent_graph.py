@@ -202,6 +202,7 @@ def analyze_transactions(state: AgentState) -> AgentState:
     - Use user_id = 1 for the demo user
     - date is in DATETIME format
     - category is stored as JSON array
+    - ensure all SQL is SQLite3 compatible
     
     FLEXIBLE MATCHING GUIDELINES:
     - For merchant/store names: Use LIKE with % wildcards for partial matching
