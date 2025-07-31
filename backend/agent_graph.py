@@ -211,6 +211,11 @@ def analyze_transactions(state: AgentState) -> AgentState:
       Example: For "restaurants", check for "food", "dining", "restaurant", etc.
     - Be case-insensitive: Use LOWER() function on both sides
     - Consider common variations and abbreviations
+
+    FOR CATEGORY SEARCHES:
+    - WRONG: JSON_EXTRACT(category, '$[*]') - wildcards not supported
+    - RIGHT: Use simple LIKE on the category column: category LIKE '%Food%'
+    - OR use JSON_EACH: FROM transactions t, JSON_EACH(t.category) je WHERE je.value LIKE '%Food%'
     
     CATEGORY MAPPINGS (use these when user asks about broad categories):
     - "restaurants/dining/food" → check for: 'Food and Drink', 'Restaurants', 'Fast Food', 'Coffee'
