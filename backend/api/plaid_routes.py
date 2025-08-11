@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from database import get_db, User, PlaidItem, Account
 from services.plaid_service import PlaidService
@@ -146,3 +147,163 @@ async def get_accounts(db: Session = Depends(get_db)):
         'balance': acc.balance_current,
         'institution': acc.plaid_item.institution_name
     } for acc in accounts]
+
+@router.get("/link-page", response_class=HTMLResponse)
+async def plaid_link_page(token: str):
+    """
+    Serve a simple HTML page that properly initializes Plaid Link.
+    
+    Why this exists: Plaid Link needs to run in a proper browser context,
+    not inside an iframe. This page handles the Link flow and redirects
+    back to your Streamlit app when complete.
+    """
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Connect Your Bank - PennyWise</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+        <style>
+            body {{
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }}
+            .container {{
+                text-align: center;
+                padding: 2rem;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+                backdrop-filter: blur(10px);
+            }}
+            h1 {{
+                margin-bottom: 1rem;
+            }}
+            .status {{
+                margin-top: 1rem;
+                padding: 1rem;
+                border-radius: 5px;
+                display: none;
+            }}
+            .success {{
+                background: rgba(72, 187, 120, 0.2);
+                color: #48BB78;
+            }}
+            .error {{
+                background: rgba(245, 101, 101, 0.2);
+                color: #F56565;
+            }}
+            button {{
+                background: #4CAF50;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                font-size: 16px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 1rem;
+            }}
+            button:hover {{
+                background: #45a049;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>💰 PennyWise</h1>
+            <h2>Connect Your Bank Account</h2>
+            <p>Click the button below to securely connect your bank account.</p>
+            
+            <button id="link-button" onclick="openLink()">
+                🏦 Connect Bank Account
+            </button>
+            
+            <div id="status" class="status"></div>
+        </div>
+        
+        <script>
+        let handler;
+        
+        // Initialize Plaid Link immediately
+        window.onload = function() {{
+            handler = Plaid.create({{
+                token: '{token}',
+                onSuccess: async (public_token, metadata) => {{
+                    console.log('Success!', public_token, metadata);
+                    
+                    // Show success message
+                    const status = document.getElementById('status');
+                    status.className = 'status success';
+                    status.style.display = 'block';
+                    status.innerHTML = '✅ Successfully connected! Processing...';
+                    
+                    // Exchange the public token
+                    try {{
+                        const response = await fetch('/plaid/exchange-token', {{
+                            method: 'POST',
+                            headers: {{
+                                'Content-Type': 'application/json',
+                            }},
+                            body: JSON.stringify({{
+                                public_token: public_token,
+                                institution_name: metadata.institution.name,
+                                institution_id: metadata.institution.institution_id
+                            }})
+                        }});
+                        
+                        if (response.ok) {{
+                            status.innerHTML = '✅ Bank account connected! You can close this window.';
+                            
+                            // Optionally redirect back to Streamlit after a delay
+                            setTimeout(() => {{
+                                window.close();
+                                // If window.close() doesn't work, redirect
+                                window.location.href = 'http://localhost:8501/1_🏦_Connect_Bank';
+                            }}, 2000);
+                        }} else {{
+                            throw new Error('Failed to exchange token');
+                        }}
+                    }} catch (error) {{
+                        status.className = 'status error';
+                        status.innerHTML = '❌ Error connecting account. Please try again.';
+                    }}
+                }},
+                onLoad: () => {{
+                    console.log('Plaid Link loaded');
+                }},
+                onExit: (err, metadata) => {{
+                    console.log('Exit', err, metadata);
+                    if (err) {{
+                        const status = document.getElementById('status');
+                        status.className = 'status error';
+                        status.style.display = 'block';
+                        status.innerHTML = '❌ ' + (err.display_message || 'Connection cancelled');
+                    }}
+                }},
+                onEvent: (eventName, metadata) => {{
+                    console.log('Event:', eventName, metadata);
+                }}
+            }});
+            
+            // Auto-open Link if desired
+            // handler.open();
+        }};
+        
+        function openLink() {{
+            if (handler) {{
+                handler.open();
+            }}
+        }}
+        </script>
+    </body>
+    </html>
+    """
+    
+    return html_content

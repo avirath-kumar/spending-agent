@@ -1,12 +1,19 @@
 import streamlit as st
 import requests
-import streamlit.components.v1 as components
+import json
+import time
 
 def main():
     st.set_page_config(page_title="Connect Bank - PennyWise", page_icon="🏦")
     
     st.title("🏦 Connect Your Bank Account")
     st.markdown("Securely connect your bank account to start tracking your spending.")
+    
+    # Initialize session state
+    if 'link_token' not in st.session_state:
+        st.session_state.link_token = None
+    if 'waiting_for_link' not in st.session_state:
+        st.session_state.waiting_for_link = False
     
     # Check for connected accounts
     try:
@@ -30,53 +37,34 @@ def main():
     except:
         pass
     
-    # Connect new account section
-    if st.button("➕ Connect New Bank Account", type="primary"):
-        with st.spinner("Initializing secure connection..."):
-            # Get link token from backend
+    # Method 1: External Link Approach (Recommended)
+    st.subheader("Method 1: Connect via Secure Link (Recommended)")
+    
+    if st.button("🔗 Generate Secure Connection Link", type="primary", key="method1"):
+        with st.spinner("Creating secure link..."):
             try:
                 response = requests.post("http://localhost:8000/plaid/link-token")
                 if response.status_code == 200:
                     link_token = response.json()["link_token"]
+                    st.session_state.link_token = link_token
                     
-                    # Plaid Link component
-                    plaid_link_html = f"""
-                    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
-                    <script>
-                    // Why this exists: Plaid Link is a pre-built widget that handles
-                    // the complex OAuth flows for thousands of banks
+                    # Create a link to open Plaid Link in a new tab
+                    # You'll need to create a simple HTML page that handles Plaid Link
+                    plaid_link_url = f"http://localhost:8000/plaid/link-page?token={link_token}"
                     
-                    const handler = Plaid.create({{
-                        token: '{link_token}',
-                        onSuccess: (public_token, metadata) => {{
-                            // Send token to parent
-                            window.parent.postMessage({{
-                                type: 'plaid_success',
-                                public_token: public_token,
-                                institution: metadata.institution
-                            }}, '*');
-                        }},
-                        onLoad: () => {{}},
-                        onExit: (err, metadata) => {{
-                            window.parent.postMessage({{
-                                type: 'plaid_exit'
-                            }}, '*');
-                        }},
-                        onEvent: (eventName, metadata) => {{}}
-                    }});
+                    st.success("✅ Secure link created!")
+                    st.info(f"""
+                    **Next Steps:**
+                    1. Click the link below to open Plaid Link in a new window
+                    2. Complete the bank connection process
+                    3. Return to this page and click "Check Connection Status"
                     
-                    handler.open();
-                    </script>
-                    """
+                    [🏦 Open Plaid Link]({plaid_link_url})
+                    """)
                     
-                    # Render Plaid Link
-                    components.html(plaid_link_html, height=500)
-                    
-                    # Listen for messages from Plaid Link
-                    st.info("🔒 Plaid Link opened in a secure window...")
-                    
+                    st.session_state.waiting_for_link = True
                 else:
-                    st.error("Failed to initialize connection")
+                    st.error("Failed to create link token")
             except Exception as e:
                 st.error(f"Error: {str(e)}")
     
